@@ -1,0 +1,31 @@
+services:
+  
+
+  bot:
+    build:
+      context: .
+    env_file: .env
+    container_name: aiobot
+    volumes:
+      - .:/app
+    command: sh -c "python bot.py"
+
+  redis:
+    image: redis:latest
+    hostname: redis
+    ports:
+      - "6379:6379"
+
+  worker:
+    build:
+      context: .
+    hostname: worker
+    entrypoint: celery
+    command: -A core.celery.app worker -B -l INFO
+    volumes:
+      - .:/app
+    links:
+      - redis
+    depends_on:
+      - redis
+      - bot

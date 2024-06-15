@@ -1,4 +1,6 @@
 .venv
+.env
+celerybeat-schedule
 __pycache__/
 Pipfile
 Pipfile.lock
