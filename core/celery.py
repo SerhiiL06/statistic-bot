@@ -11,6 +11,6 @@ app = Celery(
 app.conf.beat_schedule = {
     "first_schedule": {
         "task": "src.task.logic.parse_and_save",
-        "schedule": 30,
+        "schedule": 3600,
     },
 }

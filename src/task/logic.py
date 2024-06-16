@@ -1,11 +1,13 @@
+import logging
+import re
 import sqlite3
 from datetime import datetime
-
-from selenium import webdriver
-import re
-from celery import shared_task
-from .driver import driver
 from typing import Optional
+
+from celery import shared_task
+from selenium import webdriver
+
+from .driver import driver
 
 
 def get_job_count(driver: webdriver.Chrome) -> Optional[dict]:
@@ -48,6 +50,8 @@ def save(timestamp, job_count) -> None:
 def parse_and_save() -> None:
 
     count = get_job_count(driver.instance)
-    print(count)
+
+    logging.info(f"Get count data: {count}")
+
     if count:
         save(count.get("timestamp"), count.get("job_count"))
