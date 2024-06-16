@@ -2,8 +2,8 @@ from celery import Celery
 
 app = Celery(
     "statictic",
-    broker="redis://redis",
-    backend="redis://redis",
+    broker="redis://localhost",
+    backend="redis://localhost",
     include=["src.task.logic"],
 )
 
@@ -11,6 +11,6 @@ app = Celery(
 app.conf.beat_schedule = {
     "first_schedule": {
         "task": "src.task.logic.parse_and_save",
-        "schedule": 3600,
+        "schedule": 30,
     },
 }

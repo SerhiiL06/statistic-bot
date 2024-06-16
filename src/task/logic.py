@@ -1,39 +1,53 @@
 import sqlite3
 from datetime import datetime
-from random import randint
 
+from selenium import webdriver
+import re
 from celery import shared_task
+from .driver import driver
+from typing import Optional
 
 
-def get_job_count() -> dict:
+def get_job_count(driver: webdriver.Chrome) -> Optional[dict]:
 
-    job_count = {
-        "timestamp": datetime.now(),
-        "job_count": randint(1, 5),
-    }
-    return job_count
+    url = "https://robota.ua/zapros/junior/ukraine"
+    driver.get(url)
+
+    page_source = driver.page_source
+
+    driver.quit()
+
+    pattern = re.compile(r"(\d[\d\s]+)\s+(вакансій|вакансія|вакансії)", re.IGNORECASE)
+    result = pattern.search(page_source)
+
+    if result:
+        to_int = int(result.group(1).replace(" ", ""))
+
+        job_count = {
+            "timestamp": datetime.now(),
+            "job_count": to_int,
+        }
+        return job_count
 
 
-def save(timestamp, job_count):
+def save(timestamp, job_count) -> None:
 
-    sq = sqlite3.connect("db.sqlite3")
+    with sqlite3.connect("db.sqlite3") as sq:
 
-    sq.execute(
-        """CREATE TABLE IF NOT EXISTS job_counts
-                        (id INTEGER PRIMARY KEY AUTOINCREMENT, check_date DATE, job_count INTEGER)"""
-    )
+        create_query = """CREATE TABLE IF NOT EXISTS job_counts
+                            (id INTEGER PRIMARY KEY AUTOINCREMENT, check_date DATE, job_count INTEGER)"""
+        sq.execute(create_query)
 
-    sq.execute(
-        "INSERT INTO job_counts (check_date, job_count) VALUES (?, ?)",
-        (timestamp, job_count),
-    )
-    sq.commit()
-    sq.close()
+        insert_query = "INSERT INTO job_counts (check_date, job_count) VALUES (?, ?)"
+        sq.execute(insert_query, (timestamp, job_count))
+
+        sq.commit()
 
 
 @shared_task
-def parse_and_save():
+def parse_and_save() -> None:
 
-    count = get_job_count()
-
-    save(count.get("timestamp"), count.get("job_count"))
+    count = get_job_count(driver.instance)
+    print(count)
+    if count:
+        save(count.get("timestamp"), count.get("job_count"))
