@@ -15,7 +15,7 @@ async def starting(message: Message):
     await message.answer("hello from stastic bot!")
 
 
-@router.message(Command("get_count"))
+@router.message(Command("get_today_statistic"))
 async def get_statistic(message: Message):
 
     connect = sqlite3.connect("db.sqlite3")
