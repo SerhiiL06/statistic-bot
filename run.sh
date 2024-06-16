@@ -1,8 +1,5 @@
 #!/bin/bash
 
-echo "Встановлення залежностей"
-pip install -r requirements.txt
-
 echo "Запуск Telegram-бота..."
 python bot.py &
 BOT_PID=$!
